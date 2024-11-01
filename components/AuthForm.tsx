@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import SocialLoginButton from "./SocialLoginButton";
 
 const formSchema = z.object({
   username: z.string().min(2).max(50),
@@ -110,8 +111,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           <span className="mx-4 text-black">Or using</span>
           <div className="flex-grow border-t border-slate-500"></div>
         </div>
-        
-
+        <SocialLoginButton />
 
         <div className="mt-2">
           {type === "register" ? (
