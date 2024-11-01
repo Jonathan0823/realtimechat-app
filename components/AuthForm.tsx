@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import SocialLoginButton from "./SocialLoginButton";
+import axios from "axios";
 
 const formSchema = z.object({
   username: z.string().min(2).max(50),
@@ -37,8 +38,15 @@ const AuthForm = ({ type }: AuthFormProps) => {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (type === "register") {
+      try {
+        await axios.post("/api/auth/register", values);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
   }
 
   return (

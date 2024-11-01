@@ -1,20 +1,42 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { hash } from "bcryptjs";
 
-
-export async function POST(req: Request) {
-  const { username, email, password } = await req.json();
+export async function POST(request: Request) {
   try {
-    const user = await prisma.user.create({
+    const { username, email, password } = await request.json();
+    console.log(username, email, password);
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "Email sudah terdaftar" },
+        { status: 400 }
+      );
+    }
+
+    const hashedPassword = await hash(password, 10);
+
+    await prisma.user.create({
       data: {
         name: username,
-        email,
-        password,
+        email: email,
+        password: hashedPassword,
       },
     });
-    return NextResponse({user});
-  } catch (error) {
-    console.error(error);
-    return new NextResponse("Something went Wrong", { status: 500 });
+
+    return NextResponse.json(
+      { message: "User created successfully" },
+      { status: 201 }
+    );
+  } catch (err) {
+    console.log(err);
+    return NextResponse.json(
+      { error: "Terjadi kesalahan saat mendaftar" },
+      { status: 500 }
+    );
   }
 }
