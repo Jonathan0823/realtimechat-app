@@ -101,7 +101,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
               className="w-full"
               style={{ marginTop: "2rem" }}
             >
-              Submit
+              {type === "register" ? "Register" : "Login"}
             </Button>
           </form>
         </Form>
@@ -110,6 +110,8 @@ const AuthForm = ({ type }: AuthFormProps) => {
           <span className="mx-4 text-black">Or using</span>
           <div className="flex-grow border-t border-slate-500"></div>
         </div>
+        
+
 
         <div className="mt-2">
           {type === "register" ? (
