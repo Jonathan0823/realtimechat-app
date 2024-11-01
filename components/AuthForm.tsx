@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import SocialLoginButton from "./SocialLoginButton";
 import axios from "axios";
+import toast from "react-hot-toast";
+import { signIn } from "next-auth/react";
 
 const formSchema = z.object({
   username: z.string().min(2).max(50),
@@ -41,12 +43,23 @@ const AuthForm = ({ type }: AuthFormProps) => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (type === "register") {
       try {
-        await axios.post("/api/auth/register", values);
-      } catch (error) {
-        console.error(error);
+        const res = await axios.post("/api/auth/register", values);
+        form.reset();
+        toast.success(res.data.message);
+      } catch {
+        toast.error("An error occurred. Please try again.");
       }
     }
-
+    if (type === "login") {
+      try {
+        signIn("credentials", {
+          email: values.email,
+          password: values.password,
+        })
+      } catch {
+        toast.error("An error occurred. Please try again.");
+      }
+    }
   }
 
   return (
