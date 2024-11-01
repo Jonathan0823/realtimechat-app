@@ -17,47 +17,74 @@ import Link from "next/link";
 import SocialLoginButton from "./SocialLoginButton";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
 
-const formSchema = z.object({
+const registerSchema = z.object({
   username: z.string().min(2).max(50),
   email: z.string().email(),
   password: z.string().min(6).max(50),
 });
 
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6).max(50),
+});
+
 interface AuthFormProps {
-  type: string;
+  type: "register" | "login";
 }
 
 const AuthForm = ({ type }: AuthFormProps) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
+  const [loading, setLoading] = useState(false);
+
+  const schema = type === "register" ? registerSchema : loginSchema;
+  const form = useForm<z.infer<typeof registerSchema> | z.infer<typeof loginSchema>>({
+    resolver: zodResolver(schema),
+    defaultValues: type === "register" ? {
       username: "",
       email: "",
       password: "",
-    },
+    } : {
+      email: "",
+      password: "",
+    } as z.infer<typeof loginSchema>,
   });
 
+
+
   // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof schema>) {
     if (type === "register") {
       try {
+        setLoading(true);
         const res = await axios.post("/api/auth/register", values);
         form.reset();
         toast.success(res.data.message);
       } catch {
         toast.error("An error occurred. Please try again.");
+      } finally {
+        setLoading(false);
       }
-    }
-    if (type === "login") {
+    } else {
+      console.log(values);
       try {
-        signIn("credentials", {
+        const res = await axios.post("/api/checkcredentials", {
           email: values.email,
           password: values.password,
-        })
+        });
+        if(res.data === "Success"){
+          signIn("credentials", {
+            email: values.email,
+            password: values.password,
+            callbackUrl: "/",
+          });
+        }
+        toast.success("Logged in successfully.");
       } catch {
         toast.error("An error occurred. Please try again.");
+      } finally {
+        setLoading(false);
       }
     }
   }
@@ -112,7 +139,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your password" {...field} />
+                    <Input type="password" placeholder="Enter your password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

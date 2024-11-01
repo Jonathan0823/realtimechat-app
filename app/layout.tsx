@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ToastexContext from "./context/ToastexContext";
+import SignOut from "@/components/SignOut";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,8 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ToastexContext />
-        {children}
+        <SessionProvider>
+          <ToastexContext />
+          {children}
+          <SignOut />
+        </SessionProvider>
       </body>
     </html>
   );

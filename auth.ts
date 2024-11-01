@@ -10,33 +10,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     GitHub,
     Google,
     Credentials({
-      credentials: {
-        email: {},
-        password: {},
-      },
-      authorize: async (credentials) => {
-        let user = null;
-        user = await prisma.user.findFirst({
-          where: {
-            email: credentials.email as string,
-          },
-        });
-
-        if (!user) {
-          throw new Error("Invalid credentials.");
-        }
-
-        if (await compare(credentials.password as string, user.password as string)) {
-          return user;
-        } else {
-          throw new Error("Invalid credentials.");
+      async authorize(credentials: Partial<Record<string, unknown>>) {
+        const { email, password } = credentials as { email: string; password: string };
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email },
+          });
+          if (!user) {
+            throw new Error("No user found");
+          }
+          if (!user.password) {
+            throw new Error("User password is null");
+          }
+          const valid = await compare(password, user.password);
+          if (!valid) {
+            throw new Error("Incorrect password");
+          }
+          return { id: user.id, email: user.email };
+        } catch (error) {
+          console.error(error);
+          throw new Error("Invalid credentials");
         }
       },
     }),
   ],
   debug: process.env.NODE_ENV === "development",
-  session: {
-    strategy: "jwt",
-  },
-  secret: process.env.AUTH_SECRET,
+
 });
