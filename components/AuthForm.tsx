@@ -149,6 +149,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
               type="submit"
               className="w-full"
               style={{ marginTop: "2rem" }}
+              disabled={loading}
             >
               {type === "register" ? "Register" : "Login"}
             </Button>
